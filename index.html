@@ -1,0 +1,1450 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<title>Football Manager Tactic Creator</title>
+<style>
+body {
+    background-color: #0a0f1e;
+    color: #e6e6fa;
+    font-family: Arial, sans-serif;
+    margin: 0;
+    padding: 20px;
+}
+.fields-container {
+    display: flex;
+    justify-content: center;
+    gap: 40px;
+    margin-top: 20px;
+}
+.field-wrapper {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+h2 { margin-bottom: 10px; text-align: center; }
+
+.field {
+    position: relative;
+    width: 517px;
+    height: 540px;
+    background: url('images/field.png') center center no-repeat;
+    background-size: cover;
+    border: 2px solid #e6e6fa;
+}
+
+.zone {
+    position: absolute;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    overflow: visible;
+}
+.zone.locked {
+    pointer-events: none;
+}
+
+.player {
+    position: relative;
+    width: 40px;
+    height: 33px;
+    background-size: cover;
+    cursor: grab;
+    z-index: 2;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+.player.dragging { opacity: 0.6; cursor: grabbing; }
+
+.empty-placeholder {
+    width: 60px;
+    height: 27px;
+    background-size: cover;
+    pointer-events: none;
+    opacity: 0.85;
+    z-index: 1;
+}
+
+.player-label {
+    position: absolute;
+    bottom: -20px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 55px;
+    height: 20px;
+    border-radius: 4px;
+    pointer-events: auto;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-size: 12px;
+    font-weight: bold;
+    color: #e6e6fa;
+    text-transform: uppercase;
+    cursor: pointer;
+    user-select: none;
+}
+
+#role_dropdown {
+    position: absolute;
+    background-color: #0a0f1e;
+    color: #e6e6fa;
+    display: flex;
+    flex-direction: column;
+    z-index: 999999;
+    min-width: 160px;
+    box-shadow: 0 8px 20px rgba(0,0,0,0.6);
+    font-size: 14px;
+}
+
+#formation_container {
+    position: absolute;
+    top: 0px;
+    left: 50%;
+    transform: translateX(-50%);
+    text-align: center;
+}
+
+.formation-title {
+    font-size: 14px;
+    letter-spacing: 1px;
+    color: #e6e6fa;
+}
+
+.formation-selector {
+    display: inline-block;
+    padding: 5px 30px 5px 10px;
+    background-color: #0a0f1e;
+    color: #e6e6fa;
+    cursor: pointer;
+    font-size: 20px;
+    border: none;
+    border-radius: 0;
+    font-weight: bold;
+    position: relative;
+    appearance: none;
+    -webkit-appearance: none;
+    -moz-appearance: none;
+}
+
+.formation-selector::after {
+    content: "▼";
+    position: absolute;
+    right: 10px;
+    top: 50%;
+    transform: translateY(-50%);
+    pointer-events: none;
+    font-size: 12px;
+    color: #e6e6fa;
+}
+
+#formation_dropdown {
+    position: absolute;
+    background-color: #0a0f1e;
+    color: #e6e6fa;
+    display: flex;
+    flex-direction: column;
+    z-index: 999999;
+    min-width: 100px;
+    box-shadow: 0 8px 20px rgba(0,0,0,0.6);
+    font-size: 14px;
+    border-radius: 0;
+}
+
+.formation-entry {
+    padding: 8px 10px;
+    text-align: center;
+    white-space: nowrap;
+    cursor: pointer;
+}
+
+.formation-entry:hover {
+    background-color: #8739de;
+}
+
+#mentality_container {
+    margin-top: 30px;
+    text-align: center;
+}
+
+.mentality-title {
+    font-size: 14px;
+    letter-spacing: 1px;
+    color: #e6e6fa;
+}
+
+.mentality-selector {
+    display: inline-block;
+    padding: 5px 30px 5px 10px;
+    background-color: #0a0f1e;
+    color: #e6e6fa;
+    cursor: pointer;
+    font-size: 20px;
+    border: none;
+    border-radius: 0;
+    font-weight: bold;
+    position: relative;
+    appearance: none;
+}
+
+.mentality-selector::after {
+    content: "▼";
+    position: absolute;
+    right: 10px;
+    top: 50%;
+    transform: translateY(-50%);
+    pointer-events: none;
+    font-size: 12px;
+    color: #e6e6fa;
+}
+
+#mentality_dropdown {
+    position: absolute;
+    background-color: #0a0f1e;
+    color: #e6e6fa;
+    display: flex;
+    flex-direction: column;
+    z-index: 999999;
+    min-width: 130px;
+    box-shadow: 0 8px 20px rgba(0,0,0,0.6);
+    font-size: 14px;
+    border-radius: 0;
+}
+
+.mentality-entry {
+    padding: 8px 10px;
+    text-align: center;
+    white-space: nowrap;
+    cursor: pointer;
+}
+
+.mentality-entry:hover {
+    background-color: #8739de;
+}
+
+.role-entry {
+    padding: 8px 10px;
+    position: relative;
+    padding-left: 2em;
+    cursor: pointer;
+    text-align: left;
+    white-space: nowrap;
+}
+
+.role-entry.current::before {
+    content: '✔';
+    position: absolute;
+    left: 10px;
+    top: 50%;
+    transform: translateY(-50%);
+}
+
+.role-entry:hover {
+    background-color: #8739de;
+}
+
+#role_dropdown, .role-entry { border-radius: 0; border: none; outline: none; }
+
+#team_instructions {
+    margin-top: 40px;
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    gap: 40px;
+    color: #e6e6fa;
+}
+
+#instructions_wrapper {
+    position: relative;
+    width: 1074px;
+    max-width: none;
+    margin: 35px auto 0 auto;
+    display: flex;
+    justify-content: space-between;
+}
+
+.instruction-box {
+    width: 517px;
+    min-width: 517px;
+    max-width: 517px;
+    flex-shrink: 0;
+    background: #1a1b30;
+    border: 2px solid #444459;
+    padding: 20px;
+    border-radius: 12px;
+    color: #e6e6fa;
+    box-sizing: border-box;
+}
+
+.instruction-box .ti-title {
+    text-align: center;
+    font-size: 16px;
+    font-weight: bold;
+    margin-bottom: 15px;
+    letter-spacing: 1px;
+    color: #e6e6fa;
+}
+
+.ti-section {
+    width: 100%;
+    max-width: 480px;
+    margin: 0 auto;
+}
+
+.ti-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin: 10px 0;
+}
+
+.ti-label {
+    font-size: 15px;
+    font-weight: bold;
+    color: #e6e6fa;
+}
+
+.ti-dropdown {
+    padding: 5px 35px 5px 12px;
+    background-color: #0a0f1e;
+    color: #e6e6fa;
+    font-weight: normal;
+    cursor: pointer;
+    position: relative;
+    font-size: 15px;
+}
+
+.ti-dropdown::after {
+    content: "▼";
+    position: absolute;
+    right: 10px;
+    top: 50%;
+    transform: translateY(-50%);
+    font-size: 11px;
+}
+
+.ti-list {
+    position: absolute;
+    background-color: #0a0f1e;
+    box-shadow: 0 8px 20px rgba(0,0,0,0.6);
+    z-index: 999999;
+    min-width: 150px;
+    display: flex;
+    flex-direction: column;
+}
+
+.ti-list-item {
+    padding: 8px 10px;
+    cursor: pointer;
+    white-space: nowrap;
+    text-align: center;
+    font-weight: normal;
+    color: #e6e6fa;
+}
+
+.ti-list-item:hover {
+    background-color: #8739de;
+}
+
+#player_instructions_popup {
+    position: absolute; 
+    top: 20%;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 360px;
+    background: #1a1b30;
+    border: 2px solid #444459;
+    padding: 20px;
+    border-radius: 12px;
+    color: #e6e6fa;
+    z-index: 99999999;
+    display: none;
+}
+
+.pip-title {
+    font-size: 16px;
+    font-weight: bold;
+    margin-bottom: 30px;
+    text-align: left;
+}
+
+.pip-row {
+    font-size: 12px;
+    display: flex;
+    justify-content: space-between;
+    margin: 5px 0;
+}
+
+.pip-label {
+    font-weight: bold;
+}
+
+.pip-dropdown {
+    background-color: #0a0f1e;
+    padding: 5px 25px 5px 10px;
+    cursor: pointer;
+    position: relative;
+}
+
+.pip-dropdown::after {
+    content: "▼";
+    position: absolute;
+    right: 8px;
+    top: 50%;
+    transform: translateY(-50%);
+}
+
+.pip-list {
+    position: absolute;
+    background-color: #0a0f1e;
+    box-shadow: 0 8px 20px rgba(0,0,0,0.6);
+    z-index: 999999999;
+    display: flex;
+    flex-direction: column;
+}
+
+.pip-list-item {
+    font-size: 12px;
+    padding: 8px 10px;
+    cursor: pointer;
+    text-align: center;
+}
+
+.pip-list-item:hover {
+    background-color: #8739de;
+}
+
+.pi-icon {
+    position: absolute;
+    right: -18px;
+    top: 2px;
+    width: 16px;
+    height: 16px;
+    pointer-events: none;
+}
+
+.action-button {
+    background-color: #2d2e43;
+    color: #e8e8e9;
+    border: 1px solid #47485d;
+    padding: 10px 15px;
+    margin: 10px 5px 0 5px;
+    cursor: pointer;
+    font-size: 14px;
+    font-weight: normal;
+    border-radius: 8px;
+    transition: background-color 0.2s;
+}
+
+.action-button:hover {
+    background-color: #8739de;
+}
+
+</style>
+</head>
+<body>
+<div id="logo_container" style="text-align:center; margin-bottom:20px;">
+    <img src="images/logo.png" alt="Logo" width="300">
+</div>
+
+<div id="action_buttons" style="text-align:center; margin-bottom: 20px;">
+    <button id="load_button" class="action-button">Load</button>
+    <button id="export_button" class="action-button">Export</button>
+</div>
+<div id="main_wrapper" style="position: relative; top: 20px;">
+
+<div id="formation_container">
+    <div class="formation-title">FORMATION</div>
+    <div id="formation_label" class="formation-selector"></div>
+</div>
+
+<div class="fields-container">
+    <div class="field-wrapper">
+        <h2>In Possession</h2>
+        <div id="ip_field" class="field"></div>
+    </div>
+
+    <div class="field-wrapper">
+        <h2>Out of Possession</h2>
+        <div id="oop_field" class="field"></div>
+    </div>
+</div>
+
+<div id="mentality_container">
+    <div class="mentality-title">MENTALITY</div>
+    <div id="mentality_label" class="mentality-selector">Balanced</div>
+</div>
+
+<div id="instructions_wrapper">
+
+    <!-- LEFT: IN POSSESSION -->
+    <div class="instruction-box">
+        <div class="ti-title">TEAM INSTRUCTIONS</div>
+
+        <div class="ti-row">
+    <div class="ti-label">Passing Directness</div>
+    <div class="ti-dropdown" data-ti="passing_directness_in">Standard</div>
+</div>
+
+<div class="ti-row">
+    <div class="ti-label">Tempo</div>
+    <div class="ti-dropdown" data-ti="tempo_in">Standard</div>
+</div>
+
+<div class="ti-row">
+    <div class="ti-label">Time Wasting</div>
+    <div class="ti-dropdown" data-ti="time_wasting_in">Standard</div>
+</div>
+
+<div class="ti-row">
+    <div class="ti-label">Attacking Transition</div>
+    <div class="ti-dropdown" data-ti="attacking_transition_in">Standard</div>
+</div>
+
+<div class="ti-row">
+    <div class="ti-label">Attacking Width</div>
+    <div class="ti-dropdown" data-ti="attacking_width_in">Standard</div>
+</div>
+
+<div class="ti-row">
+    <div class="ti-label">Play for Set Pieces</div>
+    <div class="ti-dropdown" data-ti="play_for_set_pieces_in">Keep Ball in Play</div>
+</div>
+
+<div class="ti-row">
+    <div class="ti-label">Creative Freedom</div>
+    <div class="ti-dropdown" data-ti="creative_freedom_in">Balanced</div>
+</div>
+
+<div class="ti-row">
+    <div class="ti-label">Build-Up Strategy</div>
+    <div class="ti-dropdown" data-ti="build_up_strategy_in">Balanced</div>
+</div>
+
+<div class="ti-row">
+    <div class="ti-label">Goal Kicks</div>
+    <div class="ti-dropdown" data-ti="goal_kicks_in">Mixed</div>
+</div>
+
+<div class="ti-row">
+    <div class="ti-label">GK Distribution</div>
+    <div class="ti-dropdown" data-ti="gk_distribution_in">Balanced</div>
+</div>
+
+<div class="ti-row">
+    <div class="ti-label">Supporting Runs (Overlap)</div>
+    <div class="ti-dropdown" data-ti="supporting_runs_in">Balanced</div>
+</div>
+
+<div class="ti-row">
+    <div class="ti-label">Supporting Runs (Underlap)</div>
+    <div class="ti-dropdown" data-ti="supporting_runs_in2">Balanced</div>
+</div>
+
+<div class="ti-row">
+    <div class="ti-label">Dribbling</div>
+    <div class="ti-dropdown" data-ti="dribbling_in">Balanced</div>
+</div>
+
+<div class="ti-row">
+    <div class="ti-label">Progress Through</div>
+    <div class="ti-dropdown" data-ti="progress_through_in">Balanced</div>
+</div>
+
+<div class="ti-row">
+    <div class="ti-label">Pass Reception</div>
+    <div class="ti-dropdown" data-ti="pass_reception_in">Balanced</div>
+</div>
+
+<div class="ti-row">
+    <div class="ti-label">Patience</div>
+    <div class="ti-dropdown" data-ti="patience_in">Standard</div>
+</div>
+
+<div class="ti-row">
+    <div class="ti-label">Shots from Distance</div>
+    <div class="ti-dropdown" data-ti="shots_from_distance_in">Balanced</div>
+</div>
+
+<div class="ti-row">
+    <div class="ti-label">Crossing Style</div>
+    <div class="ti-dropdown" data-ti="crossing_style_in">Balanced</div>
+</div>
+
+    </div>
+
+    <div class="instruction-box">
+        <div class="ti-title">TEAM INSTRUCTIONS</div>
+
+<div class="ti-row">
+    <div class="ti-label">Line of Engagement</div>
+    <div class="ti-dropdown" data-ti="line_of_engagement_out">Mid Block</div>
+</div>
+
+<div class="ti-row">
+    <div class="ti-label">Defensive Line</div>
+    <div class="ti-dropdown" data-ti="defensive_line_out">Standard</div>
+</div>
+
+<div class="ti-row">
+    <div class="ti-label">Trigger Press</div>
+    <div class="ti-dropdown" data-ti="trigger_press_out">Standard</div>
+</div>
+
+<div class="ti-row">
+    <div class="ti-label">Defensive Transition</div>
+    <div class="ti-dropdown" data-ti="defensive_transition_out">Standard</div>
+</div>
+
+<div class="ti-row">
+    <div class="ti-label">Tackling</div>
+    <div class="ti-dropdown" data-ti="tackling_out">Standard</div>
+</div>
+
+<div class="ti-row">
+    <div class="ti-label">Cross Engagement</div>
+    <div class="ti-dropdown" data-ti="cross_engagement_out">Balanced</div>
+</div>
+
+<div class="ti-row">
+    <div class="ti-label">Pressing Trap</div>
+    <div class="ti-dropdown" data-ti="pressing_trap_out">Balanced</div>
+</div>
+
+<div class="ti-row">
+    <div class="ti-label">Short Goalkeeper Distribution</div>
+    <div class="ti-dropdown" data-ti="short_gk_distribution_out">No</div>
+</div>
+
+    </div>
+
+</div>
+
+<script>
+const fieldConfig = { rows: 6, cols: 5, width: 517, height: 540 };
+
+const formations = ["3-2-4-1","4-2-2-2 AM Narrow","4-2-3-1 DM Wide","4-3-3 DM Wide","4-4-2 Diamond Narrow","4-2-4 DM Wide","4-2-2-2 DM Wide","4-3-2-1 DM Narrow","5-2-1-2 DM WB","3-4-3 DM Narrow","3-4-3 DM Wide","5-1-2-2 DM WB"];
+let selectedFormation = formations[Math.floor(Math.random()*formations.length)];
+
+const formationPositions = {
+    "3-2-4-1": {0:[2],1:[0,1,3,4],2:[],3:[1,3],4:[1,2,3]},
+    "4-2-2-2 AM Narrow": {0:[1,3],1:[1,3],2:[],3:[1,3],4:[0,1,3,4]},
+    "4-2-3-1 DM Wide": {0:[2],1:[0,2,4],2:[],3:[1,3],4:[0,1,3,4]},
+    "4-3-3 DM Wide": {0:[2],1:[0,4],2:[1,3],3:[2],4:[0,1,3,4]},
+    "4-4-2 Diamond Narrow": {0:[1,3],1:[2],2:[1,3],3:[2],4:[0,1,3,4]},
+    "4-2-4 DM Wide": {0:[1,3],1:[0,4],2:[],3:[1,3],4:[0,1,3,4]},
+    "4-2-2-2 DM Wide": {0:[1,3],1:[],2:[0,4],3:[1,3],4:[0,1,3,4]},
+    "4-3-2-1 DM Narrow": {0:[2],1:[1,3],2:[1,3],3:[2],4:[0,1,3,4]},
+    "5-2-1-2 DM WB": {0:[1,3],1:[2],2:[],3:[0,1,3,4],4:[1,2,3]},
+    "3-4-3 DM Narrow": {0:[2],1:[1,3],2:[],3:[0,1,3,4],4:[1,2,3]},
+    "3-4-3 DM Wide": {0:[2],1:[0,4],2:[],3:[0,1,3,4],4:[1,2,3]},
+    "5-1-2-2 DM WB": {0:[1,3],1:[],2:[1,3],3:[0,2,4],4:[1,2,3]}
+};
+
+const labelColors = {
+    0: "#8d1363",
+    1: "#5f1084",
+    2: "#08397d",
+    3: "#0d7741",
+    4: "#02796f",
+    5: "#3c3c5a"
+};
+
+/* ---------------------------
+   Roles (IP + OOP)
+   key = "row_col"
+   --------------------------- */
+const roles = {
+    ip: {
+        "0_1":[{text:"Deep-Lying Forward",code:"DLF"},{text:"Centre Forward",code:"CFD"},{text:"Target Forward",code:"TF"},{text:"Poacher",code:"P"},{text:"Channel Forward",code:"CHF"},{text:"False Nine",code:"F9"}],
+        "0_2":[{text:"Deep-Lying Forward",code:"DLF"},{text:"Centre Forward",code:"CFD"},{text:"Target Forward",code:"TF"},{text:"Poacher",code:"P"},{text:"Channel Forward",code:"CHF"},{text:"False Nine",code:"F9"}],
+        "0_3":[{text:"Deep-Lying Forward",code:"DLF"},{text:"Centre Forward",code:"CFD"},{text:"Target Forward",code:"TF"},{text:"Poacher",code:"P"},{text:"Channel Forward",code:"CHF"},{text:"False Nine",code:"F9"}],
+        "1_0":[{text:"Winger",code:"W"},{text:"Inside Forward",code:"IF"},{text:"Playmaking Winger",code:"PW"},{text:"Wide Forward",code:"WFD"},{text:"Inside Winger",code:"IW"}],
+        "1_1":[{text:"Attacking Midfielder",code:"AM"},{text:"Advanced Playmaker",code:"AP"},{text:"Free Role",code:"FR"},{text:"Second Striker",code:"SS"},{text:"Channel Midfielder",code:"CHM"}],
+        "1_2":[{text:"Attacking Midfielder",code:"AM"},{text:"Advanced Playmaker",code:"AP"},{text:"Free Role",code:"FR"},{text:"Second Striker",code:"SS"},{text:"Channel Midfielder",code:"CHM"}],
+        "1_3":[{text:"Attacking Midfielder",code:"AM"},{text:"Advanced Playmaker",code:"AP"},{text:"Free Role",code:"FR"},{text:"Second Striker",code:"SS"},{text:"Channel Midfielder",code:"CHM"}],
+        "1_4":[{text:"Winger",code:"W"},{text:"Inside Forward",code:"IF"},{text:"Playmaking Winger",code:"PW"},{text:"Wide Forward",code:"WFD"},{text:"Inside Winger",code:"IW"}],
+        "2_0":[{text:"Wide Midfielder",code:"WM"},{text:"Winger",code:"W"},{text:"Playmaking Winger",code:"PW"},{text:"Inside Winger",code:"IW"}],
+        "2_1":[{text:"Central Midfielder",code:"CM"},{text:"Attacking Midfielder",code:"AM"},{text:"Advanced Playmaker",code:"AP"},{text:"Wide Central Midfielder",code:"WCM"},{text:"Channel Midfielder",code:"CHM"},{text:"Midfield Playmaker",code:"MPM"}],
+        "2_2":[{text:"Central Midfielder",code:"CM"},{text:"Attacking Midfielder",code:"AM"},{text:"Advanced Playmaker",code:"AP"},{text:"Channel Midfielder",code:"CHM"},{text:"Midfield Playmaker",code:"MPM"}],
+        "2_3":[{text:"Central Midfielder",code:"CM"},{text:"Attacking Midfielder",code:"AM"},{text:"Advanced Playmaker",code:"AP"},{text:"Wide Central Midfielder",code:"WCM"},{text:"Channel Midfielder",code:"CHM"},{text:"Midfield Playmaker",code:"MPM"}],
+        "2_4":[{text:"Wide Midfielder",code:"WM"},{text:"Winger",code:"W"},{text:"Playmaking Winger",code:"PW"},{text:"Inside Winger",code:"IW"}],
+        "3_0":[{text:"Wing-Back",code:"WB"},{text:"Advanced Wing-Back",code:"AWB"},{text:"Inside Wing-Back",code:"IWB"},{text:"Playmaking Wing-Back",code:"PWB"}],
+        "3_1":[{text:"Defensive Midfielder",code:"DM"},{text:"Deep-Lying Playmaker",code:"DLP"},{text:"Box-To-Box Midfielder",code:"BBM"},{text:"Half Back",code:"HB"},{text:"Box-To-Box Playmaker",code:"BBP"}],
+        "3_2":[{text:"Defensive Midfielder",code:"DM"},{text:"Deep-Lying Playmaker",code:"DLP"},{text:"Half Back",code:"HB"}],
+        "3_3":[{text:"Defensive Midfielder",code:"DM"},{text:"Deep-Lying Playmaker",code:"DLP"},{text:"Box-To-Box Midfielder",code:"BBM"},{text:"Half Back",code:"HB"},{text:"Box-To-Box Playmaker",code:"BBP"}],
+        "3_4":[{text:"Wing-Back",code:"WB"},{text:"Advanced Wing-Back",code:"AWB"},{text:"Inside Wing-Back",code:"IWB"},{text:"Playmaking Wing-Back",code:"PWB"}],
+        "4_0":[{text:"Full-Back",code:"FB"},{text:"Wing-Back",code:"WB"},{text:"Inside Wing-Back",code:"IWB"},{text:"Inside Full-Back",code:"IFB"},{text:"Playmaking Wing-Back",code:"PWB"}],
+        "4_1":[{text:"Centre-Back",code:"CB"},{text:"Advanced Centre-Back",code:"ACB"},{text:"Ball-Playing Centre-Back",code:"BCB"},{text:"No-Nonsense Centre-Back",code:"NCB"},{text:"Wide Centre-Back",code:"WCB"},{text:"Overlapping Centre-Back",code:"OCB"}],
+        "4_2":[{text:"Centre-Back",code:"CB"},{text:"Advanced Centre-Back",code:"ACB"},{text:"Ball-Playing Centre-Back",code:"BCB"},{text:"No-Nonsense Centre-Back",code:"NCB"}],
+        "4_3":[{text:"Centre-Back",code:"CB"},{text:"Advanced Centre-Back",code:"ACB"},{text:"Ball-Playing Centre-Back",code:"BCB"},{text:"No-Nonsense Centre-Back",code:"NCB"},{text:"Wide Centre-Back",code:"WCB"},{text:"Overlapping Centre-Back",code:"OCB"}],
+        "4_4":[{text:"Full-Back",code:"FB"},{text:"Wing-Back",code:"WB"},{text:"Inside Wing-Back",code:"IWB"},{text:"Inside Full-Back",code:"IFB"},{text:"Playmaking Wing-Back",code:"PWB"}],
+        "5_2":[{text:"Goalkeeper",code:"GK"},{text:"Ball-Playing Goalkeeper",code:"BGK"},{text:"No-Nonsense Goalkeeper",code:"NGK"}]
+    },
+    oop: {
+        "0_1":[{text:"Centre Forward",code:"CFD"},{text:"Tracking Centre Forward",code:"TCF"},{text:"Central Outlet Centre Forward",code:"OCF"},{text:"Splitting Outlet Centre Forward",code:"SCF"}],
+        "0_2":[{text:"Centre Forward",code:"CFD"},{text:"Tracking Centre Forward",code:"TCF"},{text:"Central Outlet Centre Forward",code:"OCF"}],
+        "0_3":[{text:"Centre Forward",code:"CFD"},{text:"Tracking Centre Forward",code:"TCF"},{text:"Central Outlet Centre Forward",code:"OCF"},{text:"Splitting Outlet Centre Forward",code:"SCF"}],
+        "1_0":[{text:"Winger",code:"W"},{text:"Tracking Winger",code:"TW"},{text:"Inside Outlet Winger",code:"IOW"},{text:"Wide Outlet Winger",code:"WOW"}],
+        "1_1":[{text:"Attacking Midfielder",code:"AM"},{text:"Tracking Attacking Midfielder",code:"TAM"},{text:"Central Outlet Attacking Midfielder",code:"OAM"},{text:"Splitting Outlet Attacking Midfielder",code:"SAM"}],
+        "1_2":[{text:"Attacking Midfielder",code:"AM"},{text:"Tracking Attacking Midfielder",code:"TAM"},{text:"Central Outlet Attacking Midfielder",code:"OAM"}],
+        "1_3":[{text:"Attacking Midfielder",code:"AM"},{text:"Tracking Attacking Midfielder",code:"TAM"},{text:"Central Outlet Attacking Midfielder",code:"OAM"},{text:"Splitting Outlet Attacking Midfielder",code:"SAM"}],
+        "1_4":[{text:"Winger",code:"W"},{text:"Tracking Winger",code:"TW"},{text:"Inside Outlet Winger",code:"IOW"},{text:"Wide Outlet Winger",code:"WOW"}],
+        "2_0":[{text:"Wide Midfielder",code:"WMF"},{text:"Tracking Wide Midfielder",code:"TWM"},{text:"Wide Outlet Wide Midfielder",code:"OWM"}],
+        "2_1":[{text:"Central Midfielder",code:"CM"},{text:"Pressing Central Midfielder",code:"PCM"},{text:"Screening Central Midfielder",code:"SCM"},{text:"Wide Covering Central Midfielder",code:"WCM"}],
+        "2_2":[{text:"Central Midfielder",code:"CM"},{text:"Pressing Central Midfielder",code:"PCM"},{text:"Screening Central Midfielder",code:"SCM"}],
+        "2_3":[{text:"Central Midfielder",code:"CM"},{text:"Pressing Central Midfielder",code:"PCM"},{text:"Screening Central Midfielder",code:"SCM"},{text:"Wide Covering Central Midfielder",code:"WCM"}],
+        "2_4":[{text:"Wide Midfielder",code:"WMF"},{text:"Tracking Wide Midfielder",code:"TWM"},{text:"Wide Outlet Wide Midfielder",code:"OWM"}],
+        "3_0":[{text:"Wing-Back",code:"WB"},{text:"Pressing Wing-Back",code:"PWB"},{text:"Holding Wing-Back",code:"HWB"}],
+        "3_1":[{text:"Defensive Midfielder",code:"DM"},{text:"Dropping Defensive Midfielder",code:"DDM"},{text:"Pressing Defensive Midfielder",code:"PDM"},{text:"Screening Defensive Midfielder",code:"SDM"},{text:"Wide Covering Defensive Midfielder",code:"WDM"}],
+        "3_2":[{text:"Defensive Midfielder",code:"DM"},{text:"Dropping Defensive Midfielder",code:"DDM"},{text:"Pressing Defensive Midfielder",code:"PDM"},{text:"Screening Defensive Midfielder",code:"SDM"}],
+        "3_3":[{text:"Defensive Midfielder",code:"DM"},{text:"Dropping Defensive Midfielder",code:"DDM"},{text:"Pressing Defensive Midfielder",code:"PDM"},{text:"Screening Defensive Midfielder",code:"SDM"},{text:"Wide Covering Defensive Midfielder",code:"WDM"}],
+        "3_4":[{text:"Wing-Back",code:"WB"},{text:"Pressing Wing-Back",code:"PWB"},{text:"Holding Wing-Back",code:"HWB"}],
+        "4_0":[{text:"Full-Back",code:"FB"},{text:"Pressing Full-Back",code:"PFB"},{text:"Holding Full-Back",code:"HFB"}],
+        "4_1":[{text:"Centre-Back",code:"CB"},{text:"Stopping Centre-Back",code:"SCB"},{text:"Covering Centre-Back",code:"CCB"},{text:"Wide Centre-Back",code:"WCB"},{text:"Stopping Wide Centre-Back",code:"SWD"},{text:"Covering Wide Centre-Back",code:"CWD"}],
+        "4_2":[{text:"Centre-Back",code:"CB"},{text:"Stopping Centre-Back",code:"SCB"},{text:"Covering Centre-Back",code:"CCB"}],
+        "4_3":[{text:"Centre-Back",code:"CB"},{text:"Stopping Centre-Back",code:"SCB"},{text:"Covering Centre-Back",code:"CCB"},{text:"Wide Centre-Back",code:"WCB"},{text:"Stopping Wide Centre-Back",code:"SWD"},{text:"Covering Wide Centre-Back",code:"CWD"}],
+        "4_4":[{text:"Full-Back",code:"FB"},{text:"Pressing Full-Back",code:"PFB"},{text:"Holding Full-Back",code:"HFB"}],
+        "5_2":[{text:"Goalkeeper",code:"GK"},{text:"Sweeper Keeper",code:"SK"},{text:"Line-Holding Keeper",code:"LHK"}]
+    }
+};
+
+function createLabelElement(row) {
+    const label = document.createElement('div');
+    label.className = 'player-label';
+    label.style.backgroundColor = labelColors[row] || '#666';
+    label.draggable = false;
+    label.addEventListener('mousedown', e => e.stopPropagation());
+    return label;
+}
+
+function createField(fieldId, prefix) {
+    const field = document.getElementById(fieldId);
+    const rowHeight = fieldConfig.height / fieldConfig.rows;
+    const colWidth = fieldConfig.width / fieldConfig.cols;
+
+    for(let r=0;r<fieldConfig.rows;r++){
+        for(let c=0;c<fieldConfig.cols;c++){
+            const zone = document.createElement('div');
+            zone.className = 'zone';
+            zone.id = `${prefix}_zone_${r}_${c}`;
+            zone.style.top = `${r * rowHeight}px`;
+            zone.style.left = `${c * colWidth}px`;
+            zone.style.width = `${colWidth}px`;
+            zone.style.height = `${rowHeight}px`;
+            zone.dataset.row = r;
+            zone.dataset.col = c;
+
+            if(r === 0 && (c === 0 || c === fieldConfig.cols - 1)) zone.classList.add('locked');
+            if(r === 5 && c !== 2) zone.classList.add('locked');
+
+            field.appendChild(zone);
+        }
+    }
+
+    const mapping = formationPositions[selectedFormation];
+    for(const r in mapping){
+        mapping[r].forEach(col=>{
+            const player = document.createElement('div');
+            player.className = 'player kit';
+
+            player.dataset.pid = Math.random().toString(36).substr(2,9);
+
+            player.addEventListener("click", e => {
+                if(e.target.classList.contains('kit')) {
+                    e.stopPropagation();
+                    openPlayerInstructionsPopup(player, prefix);
+                }
+            });
+
+            player.style.backgroundImage = "url('images/kit_white.png')";
+            player.draggable = true;
+
+            const piIcon = document.createElement('img');
+            piIcon.src = "images/pi_on.png";
+            piIcon.className = "pi-icon";
+            piIcon.style.display = "none";
+            player.appendChild(piIcon);
+
+            const row = parseInt(r);
+            const colIndex = col;
+            const label = createLabelElement(row);
+            const key = `${row}_${colIndex}`;
+            const fieldRoles = roles[prefix];
+            if(fieldRoles && fieldRoles[key] && fieldRoles[key].length > 0){
+                label.textContent = fieldRoles[key][0].code;
+                label.dataset.role = fieldRoles[key][0].code;
+            } else {
+                label.textContent = "";
+                label.dataset.role = "";
+            }
+            player.appendChild(label);
+
+            const zone = document.getElementById(`${prefix}_zone_${row}_${colIndex}`);
+            if(zone) zone.appendChild(player);
+        });
+    }
+
+    const gk = document.createElement('div');
+    gk.className = 'player kit';
+    gk.dataset.pid = Math.random().toString(36).substr(2,9);
+    gk.addEventListener("click", e => {
+        if(e.target.classList.contains('kit')) {
+            e.stopPropagation();
+            openPlayerInstructionsPopup(gk, prefix);
+        }
+    });
+    gk.style.backgroundImage = "url('images/kit_blue.png')";
+    gk.draggable = false;
+
+    const piIcon = document.createElement('img');
+    piIcon.src = "images/pi_on.png";
+    piIcon.className = "pi-icon";
+    piIcon.style.display = "none";
+    gk.appendChild(piIcon);
+
+    const gkLabel = createLabelElement(5);
+    const gkKey = `5_2`;
+    if(roles[prefix] && roles[prefix][gkKey]) {
+        gkLabel.textContent = roles[prefix][gkKey][0].code;
+        gkLabel.dataset.role = roles[prefix][gkKey][0].code;
+    } else {
+        gkLabel.textContent = "";
+        gkLabel.dataset.role = "";
+    }
+    gk.appendChild(gkLabel);
+
+    const gkZone = document.getElementById(`${prefix}_zone_5_2`);
+    if(gkZone) gkZone.appendChild(gk);
+
+    enableDragAndDrop(fieldId, prefix);
+}
+
+/* --- PLAYER INSTRUCTIONS: IN POSSESSION --- */
+const pipInPossession = [
+    { key: "attacking_width", label: "Attacking Width", options: ["Standard", "Stay Wider", "Sit Narrower", "Move Into Channels"] },
+    { key: "dribble_direction", label: "Dribble Direction", options: ["Standard", "Run Wide With Ball", "Cut Inside With Ball"] },
+    { key: "dribbling_frequency", label: "Dribbling Frequency", options: ["Standard", "Dribble More", "Dribble Less"] },
+    { key: "forward_runs", label: "Forward Runs", options: ["Standard", "Make More Runs", "Make Fewer Runs"] },
+    { key: "movement_freedom", label: "Freedom of Movement", options: ["Follow Tactical Position", "Roam From Position"] },
+    { key: "hold_ball", label: "Hold Up Ball", options: ["No", "Yes"] },
+    { key: "shooting", label: "Shooting", options: ["Standard", "Shoot More Often", "Shoot Less Often"] },
+    { key: "passing_risk", label: "Passing Risk", options: ["Standard", "Take More Risks", "Take Fewer Risks"] },
+    { key: "passing_strategy", label: "Passing Strategy", options: ["Standard", "Shorter", "More Direct"] },
+    { key: "cross_from", label: "Cross From", options: ["Standard", "Cross From Deep", "Byline"] },
+    { key: "crossing_strategy", label: "Crossing Strategy", options: ["Standard", "Far Post", "Centre", "Near Post", "Target Forward"] }
+];
+
+/* --- PLAYER INSTRUCTIONS: OUT OF POSSESSION --- */
+const pipOutOfPossession = [
+    { key: "trigger_press", label: "Trigger Press", options: ["Standard", "More Often", "Less Often"] },
+    { key: "marking", label: "Marking", options: ["Standard", "Mark Tighter"] },
+    { key: "tackling", label: "Tackling", options: ["Standard", "Tackle Harder", "Ease Off Tackles"] },
+    { key: "marking_target", label: "Marking Target", options: ["Standard", "Mark Specific", "Mark Position"] }
+];
+
+const playerInstructionsChanged = {};
+
+const playerInstructions = {}; // key = unique player id
+
+function openPlayerInstructionsPopup(player, prefix) {
+    const popup = document.getElementById("player_instructions_popup");
+    popup.innerHTML = "";
+
+    const isIP = prefix === "ip";
+    const title = isIP ? "Player Instructions" : "Player Instructions";
+
+    const instructionList = isIP ? pipInPossession : pipOutOfPossession;
+
+    const id = player.dataset.pid;
+    if (!playerInstructions[id]) {
+        playerInstructions[id] = {};
+        instructionList.forEach(row => {
+            playerInstructions[id][row.key] = row.options[0];
+        });
+    }
+
+    const playerRect = player.getBoundingClientRect();
+    const scrollX = window.scrollX;
+    const scrollY = window.scrollY;
+    
+    const topPos = playerRect.bottom + scrollY + 10 - 240;
+    
+    let leftPos = playerRect.left + scrollX + (playerRect.width / 2) - 180;
+
+    const popupWidth = 360;
+    const padding = 10;
+    
+    leftPos = Math.max(padding, leftPos);
+    
+    leftPos = Math.min(window.innerWidth + scrollX - popupWidth - padding, leftPos);
+    
+    popup.style.left = `${leftPos}px`;
+    popup.style.top = `${topPos}px`;
+    popup.style.display = "block";
+
+    popup.innerHTML += `<div class="pip-title">${title}</div>`;
+
+    instructionList.forEach(row => {
+        popup.innerHTML += `
+            <div class="pip-row">
+                <div class="pip-label">${row.label}</div>
+                <div class="pip-dropdown" data-setting="${row.key}">
+                    ${playerInstructions[id][row.key]}
+                </div>
+            </div>
+        `;
+    });
+
+    popup.querySelectorAll(".pip-dropdown").forEach(drop => {
+        drop.addEventListener("click", e => {
+            e.stopPropagation();
+
+            document.querySelectorAll(".pip-list").forEach(l => l.remove());
+
+            const rect = drop.getBoundingClientRect();
+            const setting = drop.dataset.setting;
+
+            const list = document.createElement("div");
+            list.className = "pip-list";
+            list.style.position = "absolute";
+
+            list.style.left = rect.left + window.scrollX + "px";
+            list.style.top = rect.bottom + window.scrollY + "px";
+
+            instructionList
+                .find(row => row.key === setting)
+                .options.forEach(option => {
+                    const item = document.createElement("div");
+                    item.className = "pip-list-item";
+                    item.textContent = option;
+
+                    item.addEventListener("click", e => {
+                        e.stopPropagation();
+                        drop.textContent = option;
+                        playerInstructions[id][setting] = option;
+                        list.remove();
+
+                        const allDefault = instructionList.every(row => playerInstructions[id][row.key] === row.options[0]);
+                        const icon = player.querySelector(".pi-icon");
+                        if (icon) icon.style.display = allDefault ? "none" : "block";
+
+                        playerInstructionsChanged[id] = !allDefault;
+                    });
+
+                    list.appendChild(item);
+                });
+
+            document.body.appendChild(list);
+        });
+    });
+}
+
+document.addEventListener("click", e => {
+    const popup = document.getElementById("player_instructions_popup");
+    if (popup.style.display === "none") return;
+
+    if (!popup.contains(e.target)) {
+        popup.style.display = "none";
+        document.querySelectorAll(".pip-list").forEach(l => l.remove());
+    }
+});
+
+function enableDragAndDrop(fieldId, prefix) {
+    const field = document.getElementById(fieldId);
+    let dragged = null;
+
+    const zones = field.querySelectorAll('.zone');
+    zones.forEach(zone=>{
+        zone.addEventListener('dragover', e => e.preventDefault());
+        zone.addEventListener('drop', e => {
+            e.preventDefault();
+            if(!dragged) return;
+
+            if(zone.classList.contains('locked')) return;
+
+            const occupied = Array.from(zone.children).some(c => c.classList.contains('player'));
+            if(occupied) return;
+
+            zone.appendChild(dragged);
+
+selectedFormation = "Custom";
+formationLabel.textContent = "Custom";
+
+            const newRow = parseInt(zone.dataset.row);
+            const newCol = parseInt(zone.dataset.col);
+            const key = `${newRow}_${newCol}`;
+            const fieldRoles = roles[prefix];
+            const label = dragged.querySelector('.player-label');
+            if(fieldRoles && fieldRoles[key] && fieldRoles[key].length > 0 && label){
+                const defaultCode = fieldRoles[key][0].code;
+                label.textContent = defaultCode;
+                label.dataset.role = defaultCode;
+                label.style.backgroundColor = labelColors[newRow] || label.style.backgroundColor;
+            } else if(label) {
+                label.textContent = "";
+                label.dataset.role = "";
+                label.style.backgroundColor = label.style.backgroundColor;
+            }
+
+            removeEmptyPlaceholders(field);
+        });
+    });
+
+    field.querySelectorAll('.player').forEach(player => {
+        if(!player.draggable) return;
+        player.addEventListener('dragstart', e => {
+
+    const dd = document.getElementById('role_dropdown');
+    if (dd) dd.remove();
+
+    dragged = player;
+    setTimeout(()=> player.classList.add('dragging'), 0);
+    showEmptyPlaceholders(field);
+});
+        player.addEventListener('dragend', e => {
+            dragged = null;
+            player.classList.remove('dragging');
+            removeEmptyPlaceholders(field);
+        });
+    });
+}
+
+function showEmptyPlaceholders(field){
+    const zones = field.querySelectorAll('.zone');
+    zones.forEach(zone=>{
+        if(zone.classList.contains('locked')) return;
+        const hasPlayer = Array.from(zone.children).some(c=>c.classList.contains('player'));
+        if(!hasPlayer){
+            const placeholder = document.createElement('div');
+            placeholder.className = 'empty-placeholder';
+            placeholder.style.backgroundImage = "url('images/empty_zone.png')";
+            zone.appendChild(placeholder);
+        }
+    });
+}
+function removeEmptyPlaceholders(field){
+    const placeholders = field.querySelectorAll('.empty-placeholder');
+    placeholders.forEach(ph => ph.remove());
+}
+
+function attachLabelDropdowns(fieldId, prefix) {
+    const field = document.getElementById(fieldId);
+
+    field.addEventListener('click', function(e){
+        const target = e.target;
+        if(!target.classList || !target.classList.contains('player-label')) return;
+
+        e.stopPropagation();
+
+        const existing = document.getElementById('role_dropdown');
+        if(existing) existing.remove();
+
+        const player = target.parentElement;
+        const zone = player.parentElement;
+        const row = zone.dataset.row;
+        const col = zone.dataset.col;
+        const key = `${row}_${col}`;
+        const fieldRoles = roles[prefix];
+        if(!fieldRoles || !fieldRoles[key]) return;
+
+        const dropdown = document.createElement('div');
+        dropdown.id = 'role_dropdown';
+
+        const rect = target.getBoundingClientRect();
+        const left = Math.max(6, rect.left + window.scrollX);
+        dropdown.style.left = `${left}px`;
+        dropdown.style.top = `${rect.bottom + window.scrollY}px`;
+        dropdown.style.zIndex = 999999;
+
+        fieldRoles[key].forEach(role => {
+    const entry = document.createElement('div');
+    entry.className = 'role-entry';
+    const isCurrent = target.dataset.role === role.code;
+
+    if (isCurrent) {
+        entry.classList.add('current');
+    }
+
+    entry.textContent = role.text;
+
+    entry.addEventListener('click', ev => {
+        ev.stopPropagation();
+        target.textContent = role.code;
+        target.dataset.role = role.code;
+
+        const dd = document.getElementById('role_dropdown');
+        if(dd) dd.remove();
+    });
+
+    dropdown.appendChild(entry);
+});
+
+        document.body.appendChild(dropdown);
+
+        const closeOnDocClick = function(ev){
+            if(!dropdown.contains(ev.target)){
+                dropdown.remove();
+                document.removeEventListener('click', closeOnDocClick);
+            }
+        };
+        setTimeout(()=> document.addEventListener('click', closeOnDocClick), 10);
+    });
+}
+
+const formationLabel = document.getElementById("formation_label");
+
+formationLabel.textContent = selectedFormation;
+
+function closeFormationDropdown(ev){
+    const dd = document.getElementById("formation_dropdown");
+    if (dd && !dd.contains(ev.target) && ev.target !== formationLabel) {
+        dd.remove();
+        document.removeEventListener("click", closeFormationDropdown);
+    }
+}
+
+formationLabel.addEventListener("click", e => {
+    e.stopPropagation();
+
+    const existing = document.getElementById("formation_dropdown");
+    if (existing) existing.remove();
+
+    const dd = document.createElement("div");
+    dd.id = "formation_dropdown";
+
+    const rect = formationLabel.getBoundingClientRect();
+    dd.style.left = (rect.left + window.scrollX) + "px";
+    dd.style.top = (rect.bottom + window.scrollY) + "px";
+
+    formations.forEach(f => {
+        const entry = document.createElement("div");
+        entry.className = "formation-entry";
+        entry.textContent = f;
+
+        entry.addEventListener("click", () => {
+
+            selectedFormation = f;
+            formationLabel.textContent = f;
+
+            document.getElementById("ip_field").innerHTML = "";
+            document.getElementById("oop_field").innerHTML = "";
+
+            createField('ip_field','ip');
+            createField('oop_field','oop');
+
+            dd.remove();
+        });
+
+        dd.appendChild(entry);
+    });
+
+    document.body.appendChild(dd);
+    document.addEventListener("click", closeFormationDropdown);
+});
+
+/* ---------------------------
+   Mentality Dropdown
+--------------------------- */
+const mentalities = ["Defensive", "Cautious", "Balanced", "Positive", "Attacking"];
+let selectedMentality = "Balanced";
+
+const mentalityLabel = document.getElementById("mentality_label");
+
+function closeMentalityDropdown(ev){
+    const dd = document.getElementById("mentality_dropdown");
+    if (dd && !dd.contains(ev.target) && ev.target !== mentalityLabel) {
+        dd.remove();
+        document.removeEventListener("click", closeMentalityDropdown);
+    }
+}
+
+mentalityLabel.addEventListener("click", e => {
+    e.stopPropagation();
+
+    const existing = document.getElementById("mentality_dropdown");
+    if (existing) existing.remove();
+
+    const dd = document.createElement("div");
+    dd.id = "mentality_dropdown";
+
+    const rect = mentalityLabel.getBoundingClientRect();
+    dd.style.left = (rect.left + window.scrollX) + "px";
+    dd.style.top = (rect.bottom + window.scrollY) + "px";
+
+    mentalities.forEach(m => {
+        const entry = document.createElement("div");
+        entry.className = "mentality-entry";
+        entry.textContent = m;
+
+        entry.addEventListener("click", () => {
+            selectedMentality = m;
+            mentalityLabel.textContent = m;
+            dd.remove();
+        });
+
+        dd.appendChild(entry);
+    });
+
+    document.body.appendChild(dd);
+    document.addEventListener("click", closeMentalityDropdown);
+});
+
+/* ------------------------------------
+   TEAM INSTRUCTIONS DROPDOWNS
+------------------------------------ */
+
+const teamInstructionOptions = {
+    passing_directness_in: ["Much Shorter", "Shorter", "Standard", "More Direct", "Much More Direct"],
+    tempo_in: ["Much Lower", "Lower", "Standard", "Higher", "Much Higher"],
+    time_wasting_in: ["Less Often", "Standard", "More Often"],
+    attacking_transition_in: ["Hold Shape", "Standard", "Counter-Attack"],
+    attacking_width_in: ["Much Narrower", "Narrower", "Standard", "Wider", "Much Wider"],
+    play_for_set_pieces_in: ["Keep Ball in Play", "Play For Set Pieces"],
+    creative_freedom_in: ["More Disciplined", "Balanced", "More Expressive"],
+    build_up_strategy_in: ["Play Through Press", "Balanced", "Bypass Press"],
+    goal_kicks_in: ["Short", "Mixed", "Long"],
+    gk_distribution_in: ["Balanced", "Centre-Backs", "Full-Backs", "Flanks", "Playmaker", "Target Forward", "Over Opposition Defence"],
+    supporting_runs_in: ["Balanced", "Left", "Right", "Both Flanks"],
+    supporting_runs_in2: ["Balanced", "Left", "Right", "Both Flanks"],
+    dribbling_in: ["Discourage", "Balanced", "Encourage"],
+    progress_through_in: ["Balanced", "Middle", "Left", "Right", "Both Flanks"],
+    pass_reception_in: ["Pass to Feet", "Balanced", "Pass Into Space"],
+    patience_in: ["Hit Early Crosses", "Standard", "Work Ball Into Box"],
+    shots_from_distance_in: ["Discourage", "Balanced", "Encourage"],
+    crossing_style_in: ["Balanced", "Floated Crosses", "Whipped Crosses", "Low Crosses"],
+
+    line_of_engagement_out: ["Low Block", "Mid Block", "High Press"],
+    defensive_line_out: ["Much Lower", "Lower", "Standard", "Higher", "Much Higher"],
+    trigger_press_out: ["Much Less Often", "Less Often", "Standard", "More Often", "Much More Often"],
+    defensive_transition_out: ["Regroup", "Standard", "Counter-Press"],
+    tackling_out: ["Stay On Feet", "Standard", "Get Stuck In"],
+    cross_engagement_out: ["Stop Crosses", "Balanced", "Invite Crosses"],
+    pressing_trap_out: ["Trap Inside", "Balanced", "Trap Outside"],
+    short_gk_distribution_out: ["No", "Yes"]
+};
+
+function closeTiDropdown(ev) {
+    document.querySelectorAll(".ti-list").forEach(list => {
+        if (!list.contains(ev.target) && !list.previousSibling?.contains(ev.target)) {
+            list.remove();
+        }
+    });
+}
+
+document.querySelectorAll(".ti-dropdown").forEach(drop => {
+    drop.addEventListener("click", e => {
+        e.stopPropagation();
+
+        document.querySelectorAll(".ti-list").forEach(l => l.remove());
+
+        const key = drop.dataset.ti;
+        const items = teamInstructionOptions[key];
+        if (!items) return;
+
+        const rect = drop.getBoundingClientRect();
+
+        const list = document.createElement("div");
+        list.className = "ti-list";
+        list.style.left = `${rect.left + window.scrollX}px`;
+        list.style.top = `${rect.bottom + window.scrollY}px`;
+
+        items.forEach(option => {
+            const item = document.createElement("div");
+            item.className = "ti-list-item";
+            item.textContent = option;
+            item.addEventListener("click", () => {
+                drop.textContent = option;
+                list.remove();
+            });
+            list.appendChild(item);
+        });
+
+        document.body.appendChild(list);
+        document.addEventListener("click", closeTiDropdown, { once: true });
+    });
+});
+
+function resetPlayerInstructions(player) {
+    const id = player.dataset.pid;
+    playerInstructionsChanged[id] = false;
+
+    const icon = player.querySelector(".pi-icon");
+    if (icon) icon.style.display = "none";
+}
+
+function captureState() {
+    const state = {};
+
+    state.formation = selectedFormation;
+    state.mentality = selectedMentality;
+
+    state.teamInstructions = {};
+    document.querySelectorAll(".ti-dropdown").forEach(drop => {
+        const key = drop.dataset.ti;
+        state.teamInstructions[key] = drop.textContent.trim();
+    });
+
+    state.players = {};
+
+    document.querySelectorAll('.player').forEach(player => {
+        const pid = player.dataset.pid;
+        const zone = player.parentElement;
+        const fieldPrefix = zone.id.startsWith('ip_') ? 'ip' : 'oop';
+
+        state.players[pid] = {
+            pid: pid,
+            row: parseInt(zone.dataset.row),
+            col: parseInt(zone.dataset.col),
+            prefix: fieldPrefix,
+            role: player.querySelector('.player-label').dataset.role,
+            // 4. Player Instructions
+            pi: playerInstructions[pid] || {} 
+        };
+    });
+
+    return state;
+}
+
+function exportTactic() {
+    const state = captureState();
+    const jsonString = JSON.stringify(state, null, 2);
+    
+    // Erstellt einen Download-Link für die JSON-Datei
+    const blob = new Blob([jsonString], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `FM_Tactic_${new Date().toISOString().slice(0, 10)}.json`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+    
+    console.log("Tactic exported successfully.");
+}
+
+function loadTactic() {
+    const input = document.createElement('input');
+    input.type = 'file';
+    input.accept = '.json';
+
+    input.onchange = e => {
+        const file = e.target.files[0];
+        if (!file) return;
+
+        const reader = new FileReader();
+        reader.onload = function(event) {
+            try {
+                const state = JSON.parse(event.target.result);
+                applyState(state);
+            } catch (error) {
+                alert("Error loading tactic: Invalid JSON file.");
+                console.error("Load error:", error);
+            }
+        };
+        reader.readAsText(file);
+    };
+
+    input.click();
+}
+
+function applyState(state) {
+    selectedFormation = state.formation;
+    formationLabel.textContent = state.formation; 
+    selectedMentality = state.mentality;
+    mentalityLabel.textContent = state.mentality;
+    
+    document.getElementById("ip_field").innerHTML = "";
+    document.getElementById("oop_field").innerHTML = "";
+    
+    createField('ip_field','ip');
+    createField('oop_field','oop');
+
+    document.querySelectorAll('.player').forEach(p => p.remove());
+
+    for (const key in state.teamInstructions) {
+        const drop = document.querySelector(`.ti-dropdown[data-ti="${key}"]`);
+        if (drop) {
+            drop.textContent = state.teamInstructions[key];
+        }
+    }
+    
+    Object.keys(playerInstructions).forEach(key => delete playerInstructions[key]);
+
+    for (const pid in state.players) {
+        const pData = state.players[pid];
+        const fieldId = `${pData.prefix}_field`; // z.B. ip_field
+        const zoneId = `${pData.prefix}_zone_${pData.row}_${pData.col}`; // z.B. ip_zone_3_2
+        const zone = document.getElementById(zoneId);
+
+        if (zone) {
+            const player = document.createElement('div');
+            player.className = 'player kit';
+
+            player.dataset.pid = pData.pid;
+            player.style.backgroundImage = pData.row === 5 
+                ? "url('images/kit_blue.png')" 
+                : "url('images/kit_white.png')";
+            player.draggable = pData.row !== 5;
+
+            const label = createLabelElement(pData.row);
+            label.textContent = pData.role;
+            label.dataset.role = pData.role;
+            player.appendChild(label);
+
+            const piIcon = document.createElement('img');
+            piIcon.src = "images/pi_on.png";
+            piIcon.className = "pi-icon";
+            
+            const instructionList = pData.prefix === 'ip' ? pipInPossession : pipOutOfPossession;
+            
+            const allDefault = instructionList.every(row => {
+                const loadedValue = pData.pi[row.key];
+                const defaultValue = row.options[0];
+
+                return loadedValue === undefined || loadedValue === defaultValue;
+            });
+            
+            piIcon.style.display = allDefault ? "none" : "block";
+            
+            player.appendChild(piIcon);
+
+            playerInstructions[pid] = pData.pi;
+
+            player.addEventListener("click", e => {
+                if(e.target.classList.contains('kit')) {
+                    e.stopPropagation();
+                    openPlayerInstructionsPopup(player, pData.prefix);
+                }
+            });
+
+            zone.appendChild(player);
+        }
+    }
+    
+    enableDragAndDrop('ip_field','ip');
+    enableDragAndDrop('oop_field','oop'); 
+}
+
+document.getElementById('export_button').addEventListener('click', exportTactic);
+document.getElementById('load_button').addEventListener('click', loadTactic);
+
+/* ---------------------------
+   Init
+   --------------------------- */
+createField('ip_field','ip');
+createField('oop_field','oop');
+
+attachLabelDropdowns('ip_field','ip');
+attachLabelDropdowns('oop_field','oop');
+
+console.log("Selected formation:", selectedFormation);
+</script>
+
+<div id="player_instructions_popup"></div>
+
+</body>
+</html>
